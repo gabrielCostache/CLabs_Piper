@@ -716,10 +716,17 @@ html { scroll-behavior: smooth; }
   box-shadow: 1.5px 2px 0 color-mix(in srgb, var(--cg-ink) 45%, transparent);
 }
 @media (max-width: 860px) {
+  .cg-nav { padding: 10px 10px; gap: 8px; flex-wrap: nowrap; }
   .cg-nav__links { display: none; }
+  .cg-nav__brand span { display: none; }
+  .cg-nav__mode { gap: 2px; padding: 3px; margin-inline: auto; }
+  .cg-nav__mode-btn { padding: 6px 11px; font-size: 0.78rem; white-space: nowrap; }
+  .cg-cta-pill { flex: none; padding: 9px 16px; font-size: 0.84rem; white-space: nowrap; }
 }
 @media (max-width: 520px) {
-  .cg-nav__mode-btn { padding: 6px 12px; }
+  .cg-nav__mode { padding: 2px; gap: 1px; }
+  .cg-nav__mode-btn { padding: 6px 9px; font-size: 0.74rem; letter-spacing: -0.01em; }
+  .cg-cta-pill { padding: 8px 12px; font-size: 0.78rem; }
 }
 @layer base {
   html {

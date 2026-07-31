@@ -224,7 +224,7 @@ function SiteNav({ siteMode }: { siteMode?: boolean }) {
           aria-current={siteMode ? "page" : undefined}
           className={"cg-nav__mode-btn" + (siteMode ? " is-on" : "")}
         >
-          Direct Website
+          Direct
         </Link>
       </div>
       <a className="cg-cta-pill" href="#contact">Book a strategy call</a>
