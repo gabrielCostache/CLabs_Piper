@@ -1,0 +1,7 @@
+## F-rank checklist — grep gate before first deploy
+- [ ] no `—` / `–` separators in visible copy (use periods/commas/colons/hyphens)
+- [ ] no scroll cues ("scroll to explore")
+- [ ] every poster path exists; posters extracted AFTER encoding
+- [ ] CSP media-src includes blob:
+- [ ] badge: no invented claims; placeholder marks on pending proof
+- [ ] route button keyboard-accessible; aria-current on active chapter

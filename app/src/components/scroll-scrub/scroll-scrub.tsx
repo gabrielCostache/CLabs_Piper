@@ -89,6 +89,8 @@ interface RuntimeSegment extends Segment {
 
 interface Controller {
   jumpToSection: (index: number) => void;
+  /** True when the user prefers reduced motion (static poster mode). */
+  reducedMotion: boolean;
 }
 
 type ThemeStyle = CSSProperties & Record<`--ss-${string}`, string | number>;
@@ -525,6 +527,7 @@ export function ScrollScrub({
     };
 
     controllerRef.current = {
+      reducedMotion: reduceMotion,
       jumpToSection(index) {
         const segment = runtime.find(
           (candidate) =>
