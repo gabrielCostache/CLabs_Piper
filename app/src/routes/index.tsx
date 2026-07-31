@@ -524,13 +524,10 @@ function About() {
       <div className="cg-wrap cg-about">
         <div className="cg-about__photo">
           <img
-            src="/assets/gabriel-about.png"
+            src="/assets/gabriel-about.jpg"
             alt="Costache Gabriel, founder of CIGGA-Labs"
             loading="lazy"
           />
-          <figcaption className="cg-note" style={{ marginTop: 14, fontSize: "1.3rem", textAlign: "center", display: "block" }}>
-            gabriel, mid-system-map
-          </figcaption>
         </div>
         <div>
           <SectionKicker

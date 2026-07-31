@@ -42,8 +42,8 @@ function Entry() {
         </h1>
 
         <div className="cg-entry__artw" aria-hidden="true">
-          <img src="/assets/entry-duo.png" alt="" width={440} height={330} className="cg-entry__art" />
-          <p className="cg-entry__artcap">gabriel gets the map · the bulldog runs the build</p>
+          <img src="/assets/gabriel-about.jpg" alt="" width={360} height={360} className="cg-entry__art" />
+          <p className="cg-entry__artcap">and this is your host</p>
         </div>
 
         <div className="cg-entry__cards">
