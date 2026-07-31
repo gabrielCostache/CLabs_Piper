@@ -99,7 +99,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-06-mobile.mp4",
     poster: "/assets/world/scene-06-poster.png",
     mobilePoster: "/assets/world/scene-06-mobile-poster.png",
-    linger: 0.4,
+    linger: 0,
   },
 ];
 
