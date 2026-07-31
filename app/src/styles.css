@@ -620,6 +620,36 @@ html { scroll-behavior: smooth; }
   color: var(--cg-ink-soft);
 }
 
+/* entry page decorative duo illustration + caption */
+.cg-entry__artw {
+  margin-top: 26px;
+  width: min(340px, 78vw);
+  text-align: center;
+}
+.cg-entry__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--cg-ink);
+  border-radius: 18px;
+  box-shadow: 6px 8px 0 color-mix(in srgb, var(--cg-ink) 16%, transparent);
+  transform: rotate(-1.1deg);
+}
+.cg-entry__artcap {
+  margin-top: 12px;
+  font-size: 1.3rem;
+  color: var(--cg-frunz);
+}
+.cg-entry__foot {
+  margin-top: 40px;
+  font-size: 1.3rem;
+  color: var(--cg-frunz);
+  font-family: "Caveat", ui-rounded, cursive;
+}
+@media (max-width: 640px) {
+  .cg-entry__artw { width: min(260px, 78vw); margin-top: 20px; }
+}
+
 /* ──────────────────────────────────────────────────────────
    Site (Direct Website) compact hero — no video
 ──────────────────────────────────────────────────────────── */
