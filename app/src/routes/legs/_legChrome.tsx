@@ -1,5 +1,5 @@
 /** SEO sat Nav + footer for leg pages (shares the homepage chrome). */
-import { CiggaMark } from "../components/cigga";
+import { CiggaMark } from "../../components/cigga";
 
 export function LegNav() {
   return (

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { bindings } from "../bindings.server";
+import { bindings } from "../lib/bindings.server";
 
 /**
  * Strategy-call request intake. Persists to D1 when the database binding is
