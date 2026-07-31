@@ -20,11 +20,23 @@
 .scroll-scrub__layer,
 .scroll-scrub__picture,
 .scroll-scrub__poster,
-.scroll-scrub__video {
+.scroll-scrub__video,
+.scroll-scrub__canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.scroll-scrub__canvas {
+  display: block;
+  object-fit: cover;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.scroll-scrub__layer[data-canvas-painted="true"] .scroll-scrub__poster {
+  visibility: hidden;
 }
 
 .scroll-scrub__media {

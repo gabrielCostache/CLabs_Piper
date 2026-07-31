@@ -7,6 +7,11 @@
  *
  * Keep this array a module constant. Changing its identity on every render
  * intentionally rebuilds the media controller.
+ *
+ * Mobile note: on touch/small screens the engine renders from pre-rendered
+ * sprite sheets (canvas) instead of seeking the mobile MP4 — see the module
+ * header in components/scroll-scrub/scroll-scrub.tsx. The mobile* fields are
+ * retained so first paint is instant while sheets load.
  */
 import type {
   ScrollScrubConnector,

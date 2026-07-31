@@ -1,4 +1,22 @@
-/* Scroll scrub React/TanStack reference implementation. */
+/* Scroll scrub React/TanStack reference implementation.
+ *
+ * Mobile strategy: iOS Safari is unreliable at rapid currentTime seeks on
+ * <video> (hardware decoder contention produces a slideshow). On mobile we
+ * therefore render each segment to a <canvas> from PRE-RENDERED sprite
+ * strips (two WebP sheets of 25 frames each, one per half of the 5 s clip
+ * sampled at 10 fps), which are just big images decoded once — scrub then
+ * costs one drawImage per rAF and is smooth in both directions on every
+ * browser including Edge on iOS.
+ *
+ * Sprite pipeline (ffmpeg):
+ *   ffmpeg -i <src>.mp4 -vf "crop=…,scale=480:854,fps=10,select='lt(n\,25)',tile=5x5" \
+ *          -frames:v 1 -c:v libwebp -quality 60 <name>-sprite-a.webp
+ *   (and gte(n\,25) for <name>-sprite-b.webp)
+ *
+ * Naming convention for every clip URL ".../foo.mp4":
+ *   ".../foo-sprite-a.webp"  (frames 0–24)
+ *   ".../foo-sprite-b.webp"  (frames 25–49)
+ */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
@@ -70,6 +88,24 @@ interface Segment {
   scene?: ScrollScrubScene;
 }
 
+/* ---- sprite constants (see module header for pipeline) ---- */
+const FRAMES_PER_CLIP = 50;
+const TILES_PER_SHEET = 25;
+const SHEET_COLS = 5;
+const FRAME_W = 480;
+const FRAME_H = 854;
+
+function spriteUrlFor(clip: string, half: "a" | "b"): string {
+  return clip.replace(/\.mp4$/, `-sprite-${half}.webp`);
+}
+
+interface SpriteSet {
+  a?: HTMLImageElement;
+  b?: HTMLImageElement;
+  loading: boolean;
+  ready: number; // bitmask: 1 = a, 2 = b
+}
+
 interface RuntimeSegment extends Segment {
   band: HTMLElement;
   layer: HTMLElement;
@@ -83,13 +119,16 @@ interface RuntimeSegment extends Segment {
   failed: boolean;
   loadedSource?: string;
   video?: HTMLVideoElement;
+  canvas?: HTMLCanvasElement;
+  canvasCtx?: CanvasRenderingContext2D | null;
+  drawnFrame?: number;
+  sprites?: SpriteSet;
   objectUrl?: string;
   abort?: AbortController;
 }
 
 interface Controller {
   jumpToSection: (index: number) => void;
-  /** True when the user prefers reduced motion (static poster mode). */
   reducedMotion: boolean;
 }
 
@@ -184,9 +223,6 @@ export function ScrollScrub({
     [connectors, scenes]
   );
 
-  // Keep the latest callback reachable from the scroll loop without making it a
-  // dependency of the controller effect. Synced in an effect, never during
-  // render — a render-phase ref write breaks under React Compiler.
   useEffect(() => {
     onActiveRef.current = onActiveSectionChange;
   }, [onActiveSectionChange]);
@@ -218,8 +254,7 @@ export function ScrollScrub({
     ).matches;
     const smallViewport = window.matchMedia("(max-width: 860px)");
     const isMobile = () => coarsePointer || smallViewport.matches;
-    const sourceFor = (segment: RuntimeSegment) =>
-      isMobile() && segment.mobileClip ? segment.mobileClip : segment.clip;
+
     const runtime: RuntimeSegment[] = segments.map((segment, index) => ({
       ...segment,
       band: bandNodes[index],
@@ -243,6 +278,101 @@ export function ScrollScrub({
     let viewportHeight = window.innerHeight;
     let layoutWidth = window.innerWidth;
     let userReady = false;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let canvasW = 0;
+    let canvasH = 0;
+
+    /* ---------------- canvas helpers (mobile sprite path) --------------- */
+
+    const ensureCanvas = (segment: RuntimeSegment) => {
+      if (segment.canvas) return;
+      const c = document.createElement("canvas");
+      c.className = "scroll-scrub__canvas";
+      segment.canvas = c;
+      segment.canvasCtx = c.getContext("2d", { alpha: false });
+      segment.layer.appendChild(c);
+    };
+
+    const sizeCanvas = (c: HTMLCanvasElement) => {
+      const w = Math.max(2, Math.round(c.clientWidth * dpr));
+      const h = Math.max(2, Math.round(c.clientHeight * dpr));
+      if (w !== c.width || h !== c.height) {
+        c.width = w;
+        c.height = h;
+      }
+      canvasW = w;
+      canvasH = h;
+    };
+
+    const drawSprite = (segment: RuntimeSegment, local: number) => {
+      const sprites = segment.sprites;
+      const c = segment.canvas;
+      const ctx = segment.canvasCtx;
+      if (!sprites || !c || !ctx) return;
+
+      if (c.clientWidth === 0 || c.clientHeight === 0) return; // hidden/layout pending
+      if (c.width === 0) sizeCanvas(c);
+
+      const idx = Math.min(
+        FRAMES_PER_CLIP - 1,
+        Math.max(0, Math.floor(clamp(local) * FRAMES_PER_CLIP))
+      );
+      if (segment.drawnFrame === idx) return;
+
+      const inA = idx < TILES_PER_SHEET;
+      const img = inA ? sprites.a : sprites.b;
+      const have = inA ? sprites.ready & 1 : sprites.ready & 2;
+      if (!img || !have) return;
+
+      const tile = inA ? idx : idx - TILES_PER_SHEET;
+      const col = tile % SHEET_COLS;
+      const row = Math.floor(tile / SHEET_COLS);
+      const sx = col * FRAME_W;
+      const sy = row * FRAME_H;
+
+      // cover-fit into the canvas
+      const scale = Math.max(canvasW / FRAME_W, canvasH / FRAME_H);
+      const dw = FRAME_W * scale;
+      const dh = FRAME_H * scale;
+      const dx = (canvasW - dw) / 2;
+      const dy = (canvasH - dh) / 2;
+
+      ctx.drawImage(img, sx, sy, FRAME_W, FRAME_H, dx, dy, dw, dh);
+      segment.drawnFrame = idx;
+      segment.layer.dataset.canvasPainted = "true";
+    };
+
+    const loadSprites = (segment: RuntimeSegment) => {
+      if (segment.sprites || segment.failed) return;
+      ensureCanvas(segment);
+      const set: SpriteSet = { loading: true, ready: 0 };
+      segment.sprites = set;
+
+      const loadOne = (half: "a" | "b") => {
+        const img = new Image();
+        img.decoding = "async";
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          set[half === "a" ? "a" : "b"] = img;
+          set.ready |= half === "a" ? 1 : 2;
+          set.loading = false;
+          // repaint current position once either sheet arrives
+          segment.drawnFrame = undefined;
+          dirty = true;
+        };
+        img.onerror = () => {
+          set.loading = false;
+          segment.failed = true;
+          segment.layer.dataset.canvasFailed = "true";
+        };
+        img.src = spriteUrlFor(segment.clip, half);
+      };
+
+      loadOne("a");
+      loadOne("b");
+    };
+
+    /* -------------------- video helpers (desktop path) -------------------- */
 
     const unloadClip = (segment: RuntimeSegment) => {
       segment.abort?.abort();
@@ -250,16 +380,25 @@ export function ScrollScrub({
       if (segment.objectUrl) {
         URL.revokeObjectURL(segment.objectUrl);
       }
+      if (segment.canvas) {
+        segment.canvas.remove();
+        delete segment.canvas;
+        delete segment.canvasCtx;
+      }
+      delete segment.sprites;
       delete segment.abort;
       delete segment.video;
       delete segment.objectUrl;
       delete segment.loadedSource;
+      delete segment.drawnFrame;
       segment.loading = false;
       segment.ready = false;
       segment.failed = false;
       segment.current = segment.target;
       delete segment.layer.dataset.videoPainted;
       delete segment.layer.dataset.videoFailed;
+      delete segment.layer.dataset.canvasPainted;
+      delete segment.layer.dataset.canvasFailed;
     };
 
     const layout = () => {
@@ -267,17 +406,15 @@ export function ScrollScrub({
       rootTop = root.getBoundingClientRect().top + pageY;
       viewportHeight = window.innerHeight;
       layoutWidth = window.innerWidth;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
 
       for (const segment of runtime) {
-        if (
-          segment.loadedSource &&
-          segment.loadedSource !== sourceFor(segment)
-        ) {
-          unloadClip(segment);
-        }
         const rect = segment.band.getBoundingClientRect();
         segment.start = rect.top + pageY - rootTop;
         segment.end = segment.start + rect.height;
+        // repainting canvas frames after dimension changes
+        segment.drawnFrame = undefined;
+        if (segment.canvas) sizeCanvas(segment.canvas);
       }
       total = Math.max(runtime.at(-1)?.end ?? viewportHeight, viewportHeight);
       dirty = true;
@@ -291,22 +428,23 @@ export function ScrollScrub({
         await video.play();
         video.pause();
       } catch {
-        // Keep the poster; a later user gesture/seek can retry naturally.
+        /* Keep the poster; a later user gesture/seek can retry naturally. */
       }
     };
 
     const loadClip = async (segment: RuntimeSegment) => {
-      const source = sourceFor(segment);
-      if (
-        reduceMotion ||
-        destroyed ||
-        segment.loading ||
-        segment.ready ||
-        segment.failed ||
-        !source
-      ) {
+      if (reduceMotion || destroyed || segment.loading || segment.ready || segment.failed) {
         return;
       }
+
+      if (isMobile()) {
+        loadSprites(segment);
+        segment.ready = true; // sprites render as soon as half A lands
+        return;
+      }
+
+      const source = segment.clip;
+      if (!source) return;
 
       segment.loading = true;
       segment.loadedSource = source;
@@ -314,18 +452,12 @@ export function ScrollScrub({
       const request = segment.abort;
 
       try {
-        const response = await fetch(source, {
-          signal: request.signal,
-        });
+        const response = await fetch(source, { signal: request.signal });
         if (!response.ok) {
           throw new Error(`Clip failed: ${response.status}`);
         }
         const blob = await response.blob();
-        if (
-          destroyed ||
-          request.signal.aborted ||
-          segment.loadedSource !== source
-        ) {
+        if (destroyed || request.signal.aborted || segment.loadedSource !== source) {
           return;
         }
 
@@ -342,9 +474,7 @@ export function ScrollScrub({
         video.addEventListener(
           "loadedmetadata",
           () => {
-            if (segment.video !== video || segment.loadedSource !== source) {
-              return;
-            }
+            if (segment.video !== video || segment.loadedSource !== source) return;
             segment.ready = true;
             segment.loading = false;
             dirty = true;
@@ -354,11 +484,7 @@ export function ScrollScrub({
         video.addEventListener(
           "loadeddata",
           () => {
-            if (
-              userReady &&
-              segment.video === video &&
-              segment.loadedSource === source
-            ) {
+            if (userReady && segment.video === video && segment.loadedSource === source) {
               void primeVideo(video);
             }
           },
@@ -367,9 +493,7 @@ export function ScrollScrub({
         video.addEventListener(
           "error",
           () => {
-            if (segment.video !== video) {
-              return;
-            }
+            if (segment.video !== video) return;
             video.remove();
             URL.revokeObjectURL(objectUrl);
             delete segment.video;
@@ -409,6 +533,8 @@ export function ScrollScrub({
       }
     };
 
+    /* --------------------------------- loop ------------------------------ */
+
     const readScroll = () => {
       const pageY = window.scrollY || window.pageYOffset;
       const y = clamp(pageY - rootTop, 0, total);
@@ -429,8 +555,7 @@ export function ScrollScrub({
         let outside = 0;
         if (y < segment.start) {
           outside = segment.start - y;
-        }
-        if (y > segment.end) {
+        } else if (y > segment.end) {
           outside = y - segment.end;
         }
         let opacity = smoothstep(1 - outside / Math.max(crossfade, 1));
@@ -470,6 +595,16 @@ export function ScrollScrub({
 
     const updateVideos = () => {
       for (const segment of runtime) {
+        // Canvas/sprite path (mobile): repaint is independent of "visible" so
+        // opacity crossfades still show the right frame mid-blend.
+        if (segment.canvas && segment.sprites) {
+          if (segment.sprites.ready) {
+            segment.current += (segment.target - segment.current) * 0.32;
+            drawSprite(segment, segment.current);
+          }
+          continue;
+        }
+
         const { video } = segment;
         if (!video || !segment.ready || video.seeking) {
           continue;
@@ -484,12 +619,12 @@ export function ScrollScrub({
         segment.current += (segment.target - segment.current) * 0.2;
         const targetTime =
           clamp(segment.current, 0, 0.999) * (video.duration || 1);
-        const epsilon = isMobile() ? 0.02 : 0.008;
+        const epsilon = 0.008;
         if (Math.abs(video.currentTime - targetTime) > epsilon) {
           try {
             video.currentTime = targetTime;
           } catch {
-            // Keep the last painted frame while the browser catches up.
+            /* Keep the last painted frame while the browser catches up. */
           }
         }
       }
@@ -517,9 +652,7 @@ export function ScrollScrub({
       layout();
     };
     const onFirstGesture = () => {
-      if (userReady) {
-        return;
-      }
+      if (userReady) return;
       userReady = true;
       for (const segment of runtime) {
         void primeVideo(segment.video);
