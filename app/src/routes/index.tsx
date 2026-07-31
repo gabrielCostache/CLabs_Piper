@@ -19,6 +19,9 @@ import {
 import { submitContact } from "@/lib/contact.functions";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): { mode?: string } => ({
+    mode: search.mode === "site" ? "site" : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "CIGGA-Labs · Business systems, automation and AI" },
@@ -156,17 +159,23 @@ const faqs = [
 ];
 
 function Index() {
-  return (
-    <div className="cg-site">
-      <SiteNav />
-      <main>
-        {/* ── the cinematic journey (chapters read over the hero's exploration) ── */}
-        <ScrollScrub
-          scenes={journeyScenes}
-          connectors={scrollScrubConnectors}
-          theme={scrollScrubTheme}
-        />
+  const { mode } = Route.useSearch();
+  const siteMode = mode === "site";
 
+  return (
+    <div className="cg-site" data-mode={siteMode ? "site" : "story"}>
+      <SiteNav siteMode={siteMode} />
+      {siteMode ? <SiteHero /> : (
+        <main>
+          {/* ── the cinematic journey (chapters read over the hero's exploration) ── */}
+          <ScrollScrub
+            scenes={journeyScenes}
+            connectors={scrollScrubConnectors}
+            theme={scrollScrubTheme}
+          />
+        </main>
+      )}
+      <main>
         <ProofBand />
         <Problems />
         <Capabilities />
@@ -185,13 +194,13 @@ function Index() {
 
 /* ─────────────────────────── chrome ─────────────────────────── */
 
-function SiteNav() {
+function SiteNav({ siteMode }: { siteMode?: boolean }) {
   return (
     <header className="cg-nav">
-      <a className="cg-nav__brand" href="#top" aria-label="CIGGA-Labs home">
+      <Link className="cg-nav__brand" to="/entry" aria-label="CIGGA-Labs home">
         <CiggaMark />
         <span>CIGGA-Labs</span>
-      </a>
+      </Link>
       <nav className="cg-nav__links" aria-label="Site">
         <a className="cg-nav__link" href="#problems">Problems</a>
         <a className="cg-nav__link" href="#capabilities">Capabilities</a>
@@ -200,8 +209,71 @@ function SiteNav() {
         <a className="cg-nav__link" href="#about">About</a>
         <a className="cg-nav__link" href="#faq">FAQ</a>
       </nav>
+      <div className="cg-nav__mode" aria-label="View mode">
+        <Link
+          to="/"
+          search={{}}
+          aria-current={siteMode ? undefined : "page"}
+          className={"cg-nav__mode-btn" + (siteMode ? "" : " is-on")}
+        >
+          Story
+        </Link>
+        <Link
+          to="/"
+          search={{ mode: "site" }}
+          aria-current={siteMode ? "page" : undefined}
+          className={"cg-nav__mode-btn" + (siteMode ? " is-on" : "")}
+        >
+          Direct Website
+        </Link>
+      </div>
       <a className="cg-cta-pill" href="#contact">Book a strategy call</a>
     </header>
+  );
+}
+
+/** Compact hero for “Direct Website” mode: clear positioning, no video. */
+function SiteHero() {
+  return (
+    <section className="cg-sitehero" aria-label="Overview">
+      <div className="cg-wrap">
+        <div className="cg-sitehero__grid">
+          <div>
+            <Eyebrow>Automation studio · founder-led</Eyebrow>
+            <h1 className="cg-h2" style={{ fontSize: "clamp(2.6rem, 6vw, 4.6rem)" }}>
+              Your business is leaking hours.{" "}
+              <em>We build the system that stops it.</em>
+            </h1>
+            <p className="cg-lede" style={{ maxWidth: "46ch" }}>
+              CIGGA-Labs designs, builds, and scales intelligent business systems: automation, AI agents, CRM architecture, funnels, and integrations for companies that have outgrown disconnected tools.
+            </p>
+            <div style={{ display: "flex", gap: 14, marginTop: 34, flexWrap: "wrap" }}>
+              <a className="cg-cta-pill" href="#contact" style={{ fontSize: "1rem", padding: "14px 26px" }}>
+                Book a strategy call
+              </a>
+              <Link
+                to="/"
+                search={{}}
+                style={{
+                  display: "inline-flex", alignItems: "center",
+                  fontWeight: 700, color: "var(--cg-ink)", textDecoration: "none",
+                  borderBottom: "2px solid var(--cg-citron)", padding: "6px 2px", alignSelf: "center",
+                }}
+              >
+                Or watch the story first →
+              </Link>
+            </div>
+          </div>
+          <div className="cg-sitehero__art" aria-hidden="true">
+            <img src="/assets/world/scene-06-poster.webp" alt="" width={640} height={427} />
+            <div className="cg-sitehero__badge">
+              <span>Top Rated</span>
+              <strong>1,000+ hrs</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -452,10 +524,13 @@ function About() {
       <div className="cg-wrap cg-about">
         <div className="cg-about__photo">
           <img
-            src="/assets/world/scene-03-poster.png"
-            alt="The CIGGA-Labs mascot plugging a system into place"
+            src="/assets/gabriel-about.png"
+            alt="Costache Gabriel, founder of CIGGA-Labs"
             loading="lazy"
           />
+          <figcaption className="cg-note" style={{ marginTop: 14, fontSize: "1.3rem", textAlign: "center", display: "block" }}>
+            gabriel, mid-system-map
+          </figcaption>
         </div>
         <div>
           <SectionKicker

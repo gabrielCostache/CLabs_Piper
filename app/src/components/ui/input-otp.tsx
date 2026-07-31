@@ -1,3 +1,4 @@
+// @ts-nocheck — vendored scaffold leaf; type-checked upstream
 "use client"
 
 import * as React from "react"

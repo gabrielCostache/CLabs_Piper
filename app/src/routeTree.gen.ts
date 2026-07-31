@@ -11,8 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as EntryRouteImport } from './routes/entry'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as Legs56RouteImport } from './routes/legs/5-6'
+import { Route as Legs45RouteImport } from './routes/legs/4-5'
+import { Route as Legs34RouteImport } from './routes/legs/3-4'
+import { Route as Legs23RouteImport } from './routes/legs/2-3'
+import { Route as Legs12RouteImport } from './routes/legs/1-2'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -22,6 +28,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntryRoute = EntryRouteImport.update({
+  id: '/entry',
+  path: '/entry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -34,39 +45,119 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Legs56Route = Legs56RouteImport.update({
+  id: '/legs/5-6',
+  path: '/legs/5-6',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Legs45Route = Legs45RouteImport.update({
+  id: '/legs/4-5',
+  path: '/legs/4-5',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Legs34Route = Legs34RouteImport.update({
+  id: '/legs/3-4',
+  path: '/legs/3-4',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Legs23Route = Legs23RouteImport.update({
+  id: '/legs/2-3',
+  path: '/legs/2-3',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Legs12Route = Legs12RouteImport.update({
+  id: '/legs/1-2',
+  path: '/legs/1-2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/entry': typeof EntryRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/legs/1-2': typeof Legs12Route
+  '/legs/2-3': typeof Legs23Route
+  '/legs/3-4': typeof Legs34Route
+  '/legs/4-5': typeof Legs45Route
+  '/legs/5-6': typeof Legs56Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/entry': typeof EntryRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/legs/1-2': typeof Legs12Route
+  '/legs/2-3': typeof Legs23Route
+  '/legs/3-4': typeof Legs34Route
+  '/legs/4-5': typeof Legs45Route
+  '/legs/5-6': typeof Legs56Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/entry': typeof EntryRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/legs/1-2': typeof Legs12Route
+  '/legs/2-3': typeof Legs23Route
+  '/legs/3-4': typeof Legs34Route
+  '/legs/4-5': typeof Legs45Route
+  '/legs/5-6': typeof Legs56Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/robots.txt' | '/sitemap.xml'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/entry'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/legs/1-2'
+    | '/legs/2-3'
+    | '/legs/3-4'
+    | '/legs/4-5'
+    | '/legs/5-6'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/robots.txt' | '/sitemap.xml'
-  id: '__root__' | '/' | '/app' | '/robots.txt' | '/sitemap.xml'
+  to:
+    | '/'
+    | '/app'
+    | '/entry'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/legs/1-2'
+    | '/legs/2-3'
+    | '/legs/3-4'
+    | '/legs/4-5'
+    | '/legs/5-6'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/entry'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/legs/1-2'
+    | '/legs/2-3'
+    | '/legs/3-4'
+    | '/legs/4-5'
+    | '/legs/5-6'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  EntryRoute: typeof EntryRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  Legs12Route: typeof Legs12Route
+  Legs23Route: typeof Legs23Route
+  Legs34Route: typeof Legs34Route
+  Legs45Route: typeof Legs45Route
+  Legs56Route: typeof Legs56Route
 }
 
 declare module '@tanstack/react-router' {
@@ -85,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entry': {
+      id: '/entry'
+      path: '/entry'
+      fullPath: '/entry'
+      preLoaderRoute: typeof EntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -99,14 +197,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legs/5-6': {
+      id: '/legs/5-6'
+      path: '/legs/5-6'
+      fullPath: '/legs/5-6'
+      preLoaderRoute: typeof Legs56RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legs/4-5': {
+      id: '/legs/4-5'
+      path: '/legs/4-5'
+      fullPath: '/legs/4-5'
+      preLoaderRoute: typeof Legs45RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legs/3-4': {
+      id: '/legs/3-4'
+      path: '/legs/3-4'
+      fullPath: '/legs/3-4'
+      preLoaderRoute: typeof Legs34RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legs/2-3': {
+      id: '/legs/2-3'
+      path: '/legs/2-3'
+      fullPath: '/legs/2-3'
+      preLoaderRoute: typeof Legs23RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legs/1-2': {
+      id: '/legs/1-2'
+      path: '/legs/1-2'
+      fullPath: '/legs/1-2'
+      preLoaderRoute: typeof Legs12RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  EntryRoute: EntryRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  Legs12Route: Legs12Route,
+  Legs23Route: Legs23Route,
+  Legs34Route: Legs34Route,
+  Legs45Route: Legs45Route,
+  Legs56Route: Legs56Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
