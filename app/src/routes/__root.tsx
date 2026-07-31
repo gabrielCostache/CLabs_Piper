@@ -174,7 +174,7 @@ function RootShell({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Caveat:wght@500;600;700&display=swap"
         />
       </head>
-      <body style={{ background: "#F5F0D8", color: "#171D18" }}>
+      <body style={{ background: "var(--cg-pulp)", color: "var(--cg-ink)" }}>
         {children}
         <Scripts />
       </body>
