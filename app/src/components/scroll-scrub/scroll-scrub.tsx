@@ -311,7 +311,9 @@ export function ScrollScrub({
       if (!sprites || !c || !ctx) return;
 
       if (c.clientWidth === 0 || c.clientHeight === 0) return; // hidden/layout pending
-      if (c.width === 0) sizeCanvas(c);
+      if (c.width === 0 || Math.abs(c.width - c.clientWidth * dpr) > 2) {
+        sizeCanvas(c);
+      }
 
       const idx = Math.min(
         FRAMES_PER_CLIP - 1,
@@ -599,8 +601,11 @@ export function ScrollScrub({
         // opacity crossfades still show the right frame mid-blend.
         if (segment.canvas && segment.sprites) {
           if (segment.sprites.ready) {
-            segment.current += (segment.target - segment.current) * 0.32;
-            drawSprite(segment, segment.current);
+        segment.current += (segment.target - segment.current) * 0.32;
+        if (segment.drawnFrame == null) {
+          segment.current = segment.target;
+        }
+        drawSprite(segment, segment.current);
           }
           continue;
         }
