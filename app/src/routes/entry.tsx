@@ -51,6 +51,15 @@ function Entry() {
           Watch the mascot walk a broken business back to one connected system, or skip the story and go straight to what CIGGA-Labs does.
         </p>
 
+        <div className="cg-entry__figure" aria-hidden="true">
+          <img
+            src="/assets/gabriel-about.png"
+            alt=""
+            className="cg-entry__img"
+          />
+          <span className="cg-entry__figure-cap">and this is your host ↓</span>
+        </div>
+
         <div className="cg-entry__cards">
           <Link to="/" className="cg-entry-card cg-entry-card--story" aria-label="Enter the story">
             <span className="cg-entry-card__num">01</span>
