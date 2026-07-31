@@ -34,6 +34,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-01-mobile.mp4",
     poster: "/assets/world/scene-01-poster.png",
     mobilePoster: "/assets/world/scene-01-mobile-poster.png",
+    linger: 0.35,
   },
   {
     id: "scene-02",
@@ -46,6 +47,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-02-mobile.mp4",
     poster: "/assets/world/scene-02-poster.png",
     mobilePoster: "/assets/world/scene-02-mobile-poster.png",
+    linger: 0.35,
   },
   {
     id: "scene-03",
@@ -58,6 +60,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-03-mobile.mp4",
     poster: "/assets/world/scene-03-poster.png",
     mobilePoster: "/assets/world/scene-03-mobile-poster.png",
+    linger: 0.35,
   },
   {
     id: "scene-04",
@@ -70,6 +73,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-04-mobile.mp4",
     poster: "/assets/world/scene-04-poster.png",
     mobilePoster: "/assets/world/scene-04-mobile-poster.png",
+    linger: 0.35,
   },
   {
     id: "scene-05",
@@ -82,6 +86,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-05-mobile.mp4",
     poster: "/assets/world/scene-05-poster.png",
     mobilePoster: "/assets/world/scene-05-mobile-poster.png",
+    linger: 0.35,
   },
   {
     id: "scene-06",
@@ -94,6 +99,7 @@ export const scrollScrubScenes: ScrollScrubScene[] = [
     mobileClip: "/assets/world/scene-06-mobile.mp4",
     poster: "/assets/world/scene-06-poster.png",
     mobilePoster: "/assets/world/scene-06-mobile-poster.png",
+    linger: 0.4,
   },
 ];
 
