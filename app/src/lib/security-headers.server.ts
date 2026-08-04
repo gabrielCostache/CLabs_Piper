@@ -1,5 +1,5 @@
 /**
- * Security headers applied to every Worker response. Import in app/src/server.ts
+ * Security headers applied to every server response. Import in app/src/server.ts
  * and wrap the final response: `return applySecurityHeaders(response)`.
  */
 export function applySecurityHeaders(response: Response): Response {

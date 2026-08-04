@@ -1,13 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { bindings } from "../lib/bindings.server";
-
 /**
- * Strategy-call request intake. Persists to D1 when the database binding is
- * provisioned (app.manifest.json "db": true); otherwise accepts and logs to the
- * Worker console so the form never dead-ends. Returns a generic success either
- * way — never leak infra state to the client.
+ * Strategy-call request intake. No database is provisioned — this just logs
+ * to the Vercel function output so the form never dead-ends. Watch
+ * `vercel logs` (or the Vercel dashboard) to see submissions, or wire this
+ * up to a real store / email provider later. Returns a generic success
+ * either way — never leak infra state to the client.
  */
 export const submitContact = createServerFn({ method: "POST" })
   .validator(
@@ -23,28 +22,6 @@ export const submitContact = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const { DB } = bindings();
-    if (DB) {
-      await DB.prepare(
-        `CREATE TABLE IF NOT EXISTS contact_requests (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL,
-          company TEXT,
-          message TEXT NOT NULL,
-          created_at TEXT NOT NULL DEFAULT (datetime('now'))
-        )`,
-      ).run();
-      await DB.prepare(
-        `INSERT INTO contact_requests (name, email, company, message) VALUES (?, ?, ?, ?)`,
-      )
-        .bind(data.name, data.email, data.company, data.message)
-        .run();
-    } else {
-      console.log(
-        "[contact] no DB binding; request received:",
-        JSON.stringify({ name: data.name, email: data.email, company: data.company }),
-      );
-    }
+    console.log("[contact] request received:", JSON.stringify(data));
     return { ok: true as const };
   });
