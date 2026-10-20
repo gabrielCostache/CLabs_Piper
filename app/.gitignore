@@ -16,8 +16,12 @@ dist-ssr
 .nitro
 *.local
 
-# Vercel
-.vercel/
+# Wrangler / Cloudflare
+# .wrangler/ holds the local workerd state for `wrangler dev` AND the
+# generated deploy/config.json pointer written by the build — both are
+# build output, never source.
+.wrangler/
+.dev.vars
 
 # Editor directories and files
 .vscode/*

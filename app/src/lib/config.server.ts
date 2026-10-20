@@ -3,10 +3,11 @@ import process from "node:process";
 // Server-only config. The .server.ts suffix prevents Vite from bundling
 // this file into the client — values here never reach the browser.
 //
-// On serverless hosts (Vercel functions included), env can bind at REQUEST
-// time rather than module load. Module-scope reads (e.g. `const x =
-// process.env.X`) may resolve to undefined — always read process.env
-// INSIDE a function or handler.
+// On serverless hosts — and on Cloudflare Workers especially — env binds at
+// REQUEST time rather than module load. Module-scope reads (e.g. `const x =
+// process.env.X`) resolve to undefined there, so always read process.env
+// INSIDE a function or handler. On workerd, process.env is populated from
+// the Worker's `vars` + secrets by the nodejs_compat layer.
 //
 // When to use which env-access pattern:
 //   - .server.ts module (this file): server-only helpers reused across

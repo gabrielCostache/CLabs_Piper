@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegCta, LegFooter, LegNav } from "./_legChrome";
+import { LegCta, LegFooter, LegNav } from "./-_legChrome";
 
 const TITLE = 'The Diagnosis: finding every kink in the hose';
 const DESC = 'Before anything gets built, CIGGA-Labs maps how your business actually runs: every tool, handoff, and silent failure, priced in hours.';

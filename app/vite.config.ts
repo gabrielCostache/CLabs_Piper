@@ -56,13 +56,23 @@ export default defineConfig(({ mode }) => {
       tanstackStart({
         server: { entry: "server" },
       }),
-      // Nitro takes over the SSR build/bundling and packages the server for
-      // whatever host it detects at build time (Vercel's build sets env vars
-      // Nitro reads to auto-select its `vercel` preset — zero config needed).
-      // `vite build` still emits dist/client (hashed static assets); the
-      // server output moves under .output/ / .vercel/ instead of
-      // dist/server/server.js.
-      nitro(),
+      // Nitro takes over the SSR build/bundling and packages the server for a
+      // target host. We pin Cloudflare Workers instead of letting Nitro
+      // auto-detect, so a local build, CI and Cloudflare's own Workers Builds
+      // all produce the SAME artifact — auto-detection only fires inside a
+      // host's build container, so locally it would silently fall back to a
+      // plain node-server build and we would never exercise the workerd
+      // shape until deploy.
+      //
+      // The preset emits .output/server/index.mjs (the Worker), .output/public
+      // (static assets) and the merged .output/server/wrangler.json. It also
+      // applies `nodejs_compat` + unenv polyfills, so node: imports in the SSR
+      // path keep working on workerd.
+      //
+      // NITRO_PRESET still overrides this, which is the escape hatch for
+      // building toward another host (e.g. NITRO_PRESET=vercel) without
+      // touching this file.
+      nitro({ preset: process.env.NITRO_PRESET || "cloudflare_module" }),
       higgsfieldDesignInspectorVitePlugin(designInspectorEnabled),
       react({
         babel: {

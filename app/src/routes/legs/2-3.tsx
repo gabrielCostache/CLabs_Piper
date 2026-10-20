@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegCta, LegFooter, LegNav } from "./_legChrome";
+import { LegCta, LegFooter, LegNav } from "./-_legChrome";
 
 const TITLE = 'The Build: everything plugs into one spine';
 const DESC = 'Designing the architecture: CRM, funnels, payments, comms, and AI agents wired into one system with a single source of truth.';

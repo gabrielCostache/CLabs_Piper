@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Hand-written half of the Cloudflare config. Nitro's `cloudflare_module`
+  // preset MERGES this file into the authoritative config it emits at
+  // .output/server/wrangler.json during `bun run build`, and injects:
+  //   - "main"   -> .output/server/index.mjs (the SSR Worker bundle)
+  //   - "assets" -> { binding: "ASSETS", directory: .output/public }
+  //   - "no_bundle": true + an ESModule rule for **/*.mjs
+  //   - "nodejs_compat" in compatibility_flags
+  // Declaring any of those HERE makes Nitro warn and ignore them, so don't.
+  //
+  // The build also writes .wrangler/deploy/config.json, which points the
+  // wrangler CLI at the generated config — that is why `wrangler deploy` /
+  // `wrangler versions upload` work from this directory with no --config flag.
+  //
+  // `name` must be a valid Cloudflare Worker name (lowercase + dashes, 3-63
+  // chars). It is the deploy identity: it decides the workers.dev subdomain
+  // (clabs-piper.<account>.workers.dev) and renaming it creates a NEW Worker
+  // rather than updating this one.
+  "name": "clabs-piper",
+
+  "compatibility_date": "2025-07-13",
+
+  // Workers Logs: keeps console.log / console.error from the SSR handler
+  // queryable in the dashboard. The contact form writes submissions there
+  // (see src/lib/contact.functions.ts), so this is load-bearing, not debug.
+  "observability": { "enabled": true },
+
+  "vars": { "HF_ENV": "production" },
+}

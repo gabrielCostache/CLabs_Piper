@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegCta, LegFooter, LegNav } from "./_legChrome";
+import { LegCta, LegFooter, LegNav } from "./-_legChrome";
 
 const TITLE = 'The Connected System: one business, end to end';
 const DESC = 'What the finished state looks like: every leg wired into one connected operation you can see, measure, and steer.';

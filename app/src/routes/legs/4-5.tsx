@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegCta, LegFooter, LegNav } from "./_legChrome";
+import { LegCta, LegFooter, LegNav } from "./-_legChrome";
 
 const TITLE = 'It Holds: deployment, monitoring, and the flag moment';
 const DESC = 'Go-live with monitoring, alerting, and rollback paths, so when something breaks you hear it from the system first.';

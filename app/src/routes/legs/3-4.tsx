@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegCta, LegFooter, LegNav } from "./_legChrome";
+import { LegCta, LegFooter, LegNav } from "./-_legChrome";
 
 const TITLE = 'The Proof: nothing deploys until it survives testing';
 const DESC = 'Every module is run against real cases, edge cases, and failure modes before it touches live operations.';
